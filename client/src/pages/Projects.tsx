@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import {  useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import type { Project } from '../types'
 import { ArrowBigDownDashIcon, EyeIcon, EyeOffIcon, FullscreenIcon, LaptopIcon, Link, Loader2Icon, MessageSquareIcon, SaveIcon, SmartphoneIcon, TabletIcon, XIcon } from 'lucide-react'
 import { dummyConversations, dummyProjects, dummyVersion } from '../assets/assets'
@@ -35,10 +35,28 @@ const Projects = () => {
   const saveProject = async () => {
 
   };
+  // download code ( index.html )
+  const downloadCode = () => {
+    const code =
+      previewRef.current?.getCode() || project?.current_code;
 
-  const downloadCode = async () => {
+    if (!code) {
+      if (isGenerating) {
+        return;
+      }
+      return;
+    }
 
+    const element = document.createElement('a');
+    const file = new Blob([code], { type: "text/html" });
+
+    element.href = URL.createObjectURL(file);
+    element.download = "index.html";
+
+    document.body.appendChild(element);
+    element.click();
   };
+
 
   const togglePublish = async () => {
 
@@ -52,7 +70,7 @@ const Projects = () => {
       <div className='flex items-center justify-center h-screen'>
         <Loader2Icon className='size-7 animate-spin text-violet-200' />
 
-      </div> 
+      </div>
     </>
   }
   return project ? (
@@ -152,10 +170,10 @@ const Projects = () => {
 
       </div>
       <div className='flex-1 flex overflow-auto'>
-         <Sidebar isMenuOpen={isMenuOpen} project={project} setProject={(p) => setProject(p)} isGenerating={isGenerating} setIsGenerating={setIsGenerating} />
-         <div className='flex-1 p-2 pl-0'> 
-          <ProjectPreview ref={previewRef} project={project} isGenerating={isGenerating} device={device} /> 
-          </div>
+        <Sidebar isMenuOpen={isMenuOpen} project={project} setProject={(p) => setProject(p)} isGenerating={isGenerating} setIsGenerating={setIsGenerating} />
+        <div className='flex-1 p-2 pl-0'>
+          <ProjectPreview ref={previewRef} project={project} isGenerating={isGenerating} device={device} />
+        </div>
       </div>
     </div>
   )
