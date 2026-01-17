@@ -1,4 +1,4 @@
-import React, { forwardRef, use, useEffect, useRef, useState } from 'react'
+import React, { forwardRef, use, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { Project } from '../types';
 import { iframeScript } from '../assets/assets';
 import { Edit } from 'lucide-react';
@@ -28,6 +28,35 @@ const ProjectPreview = forwardRef<ProjectPreviewRef, ProjectPreviewProps>(
             tablet: 'w-[768px]',
             desktop: 'w-full',
         }
+
+        useImperativeHandle(ref, () => ({
+            getCode: () => {
+                const doc = iframeRef.current?.contentDocument;
+                if (!doc) return undefined;
+
+                // 1. Remove our selection class / attributes / outline from all elements
+                doc
+                    .querySelectorAll('.ai-selected-element,[data-ai-selected]')
+                    .forEach((el) => {
+                        el.classList.remove('ai-selected-element');
+                        el.removeAttribute('data-ai-selected');
+                        (el as HTMLElement).style.outline = '';
+                    });
+
+                // 2. Remove injected style + script from the document
+                const previewStyle = doc.getElementById('ai-preview-style');
+                if (previewStyle) previewStyle.remove();
+
+                const previewScript = doc.getElementById('ai-preview-script');
+                if (previewScript) previewScript.remove();
+
+                // 3. Serialize clean HTML
+                const html = doc.documentElement.outerHTML;
+                return html;
+
+            },
+        }));
+
         useEffect(() => {
             const handleMessage = (event: MessageEvent) => {
                 if (event.data.type === 'ELEMENT_SELECTED') {
@@ -47,7 +76,7 @@ const ProjectPreview = forwardRef<ProjectPreviewRef, ProjectPreviewProps>(
                     {
                         type: 'UPDATE_ELEMENT',
                         payload: updates
-                    },'*');
+                    }, '*');
             }
         };
 
